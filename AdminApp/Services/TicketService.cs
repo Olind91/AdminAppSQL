@@ -1,5 +1,6 @@
 ﻿using AdminApp.Models.Entities;
 using AdminApp.Models;
+using System.Net.Sockets;
 
 
 namespace AdminApp.Services
@@ -79,6 +80,7 @@ namespace AdminApp.Services
 
                 if (ticket != null)
                 {
+                    Console.Clear();
                     Console.WriteLine($"Customer ID: {ticket.Id}");
                     Console.WriteLine($"Name: {ticket.FirstName} {ticket.LastName}");
                     Console.WriteLine($"Email: {ticket.Email}");
@@ -94,11 +96,13 @@ namespace AdminApp.Services
                     }
                     Console.WriteLine("");
                 }
+                else
+                {
+                    Console.Clear();
+                    Console.WriteLine($"No ticket registered with  {email}  as an email");
+                }
             }
-            else
-            {
-                Console.WriteLine($"No customer with {email} exists");
-            }
+           
 
 
 
@@ -108,8 +112,7 @@ namespace AdminApp.Services
 
             Console.WriteLine("Input the email of the customer you wish to update");
             var email = Console.ReadLine();
-            Console.Clear();
-            Console.WriteLine("Ticket found! Please fill in the fields below what you want to update");
+            
 
 
             if (!string.IsNullOrEmpty(email))
@@ -118,29 +121,33 @@ namespace AdminApp.Services
                 var ticket = await databaseService.GetAsync(email);
                 if (ticket != null)
                 {
-
-                    Console.Write("Update status (1-3): ");
+                    Console.Clear();
+                    Console.WriteLine("Ticket found! Please choose a new status");
+                    Console.Write("1 = Not Started. 2 = In progress. 3 = Complete: ");
 
                     TicketStatus status;
                     if (Enum.TryParse(Console.ReadLine(), out status) && Enum.IsDefined(typeof(TicketStatus), status))
                     {
                         ticket.Status = status;
+                        await databaseService.UpdateAsync(ticket);
+                        Console.Clear();
+                        Console.WriteLine($"Status has been updated to {ticket.Status}!");
                     }
                     else
                     {
+                        Console.Clear();
                         Console.WriteLine("Invalid Input...");
                     }
+                    
+                }
 
-
-                    await databaseService.UpdateAsync(ticket);
+                else
+                {
                     Console.Clear();
-                    Console.WriteLine($"Status has been updated to {ticket.Status}!");
+                    Console.WriteLine($"No ticket registered with  {email}  as an email"); 
                 }
             }
-            else
-            {
-                Console.WriteLine($"No customer with {email} exists");
-            }
+            
 
         }
 
@@ -148,21 +155,28 @@ namespace AdminApp.Services
         public static async Task RemoveTicketAsync()
         {
             var databaseService = new DatabaseService();
-            Console.WriteLine("Input the email of the customer you wish to remove");
+            Console.WriteLine("Input the email of the customerticket you wish to remove");
             var email = Console.ReadLine();
 
 
             if (!string.IsNullOrEmpty(email))
             {
+                var ticket = await databaseService.GetAsync(email);
+                    
+                if(ticket!= null)
+                {
                 await databaseService.RemoveAsync(email);
                 Console.Clear();
-                Console.WriteLine($"customer with {email} has been removed!");
+                Console.WriteLine($"Ticket registered with the email {email} has been removed!");
+                }
 
+                else
+                {
+                    Console.Clear();
+                    Console.WriteLine($"No ticket registered with {email} as an email");
+                }
             }
-            else
-            {
-                Console.WriteLine($"No ticket is registered with that email!");
-            }
+            
 
         }
 
@@ -179,13 +193,20 @@ namespace AdminApp.Services
 
                 if (ticket != null)
                 {
-                    Console.WriteLine("Add a comment...");
+                    Console.Clear();
+                    Console.WriteLine("Ticket found! Add a comment...");
                     string comment = Console.ReadLine() ?? "";
+                    Console.Clear();
+                    Console.WriteLine("Comment added!");
 
                     await databaseService.AddCommentAsync(ticket.Id, comment);
-                    {
+                }
 
-                    }
+                else
+                {
+                    Console.WriteLine($"No ticket registered with {email} as an email");
+                    
+                    
                 }
             }
 
